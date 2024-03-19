@@ -1,0 +1,627 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.Form..Create(BaseForm)
+Gui.Form..Caption("Price variance dashboard")
+Gui.Form..Size(1020,720)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..AlwaysOnTop(False)
+Gui.Form..FontName("Tahoma")
+Gui.Form..FontSize(8.25)
+Gui.Form..ControlBox(True)
+Gui.Form..MaxButton(True)
+Gui.Form..MinButton(True)
+Gui.Form..MousePointer(0)
+Gui.Form..Moveable(True)
+Gui.Form..Sizeable(True)
+Gui.Form..ShowInTaskBar(True)
+Gui.Form..TitleBar(True)
+Gui.Form..Event(UnLoad,Form_UnLoad)
+Gui.Form.lbl1.Create(Label,"From",True,24,13,0,3,7,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lbl1.BorderStyle(0)
+Gui.Form.dtpFrom.Create(DatePicker)
+Gui.Form.dtpFrom.Enabled(True)
+Gui.Form.dtpFrom.Visible(True)
+Gui.Form.dtpFrom.Zorder(0)
+Gui.Form.dtpFrom.Size(92,20)
+Gui.Form.dtpFrom.Position(1,23)
+Gui.Form.dtpFrom.CheckBox(False)
+Gui.Form.dtpFrom.FontName("Tahoma")
+Gui.Form.dtpFrom.FontSize(8.25)
+Gui.Form.dtpTo.Create(DatePicker)
+Gui.Form.dtpTo.Enabled(True)
+Gui.Form.dtpTo.Visible(True)
+Gui.Form.dtpTo.Zorder(0)
+Gui.Form.dtpTo.Size(92,20)
+Gui.Form.dtpTo.Position(97,22)
+Gui.Form.dtpTo.CheckBox(False)
+Gui.Form.dtpTo.FontName("Tahoma")
+Gui.Form.dtpTo.FontSize(8.25)
+Gui.Form.lbl2.Create(Label,"To",True,12,13,0,99,6,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lbl2.BorderStyle(0)
+Gui.Form.cmdRefresh.Create(Button)
+Gui.Form.cmdRefresh.Enabled(True)
+Gui.Form.cmdRefresh.Visible(True)
+Gui.Form.cmdRefresh.Zorder(0)
+Gui.Form.cmdRefresh.Size(20,21)
+Gui.Form.cmdRefresh.Position(192,22)
+Gui.Form.cmdRefresh.Caption("Refresh")
+Gui.Form.cmdRefresh.FontName("Tahoma")
+Gui.Form.cmdRefresh.FontSize(8.25)
+Gui.Form.cmdRefresh.Event(Click,cmdRefresh_Click)
+Gui.Form.tab1.Create(Tab)
+Gui.Form.tab1.Enabled(True)
+Gui.Form.tab1.Visible(True)
+Gui.Form.tab1.Zorder(0)
+Gui.Form.tab1.Size(1015,640)
+Gui.Form.tab1.Position(2,49)
+Gui.Form.tab1.FontName("Tahoma")
+Gui.Form.tab1.FontSize(8.25)
+Gui.Form.tab1.Anchor(15)
+Gui.Form.tab1.Tabs(2)
+Gui.Form.tab1.SetTab(0)
+Gui.Form.tab1.Caption("Finish Goods")
+Gui.Form.tab1.SetTab(1)
+Gui.Form.tab1.Caption("Raw Materials")
+Gui.Form.GSGC_RM.Create(GsGridControl)
+Gui.Form.GSGC_RM.Enabled(True)
+Gui.Form.GSGC_RM.Visible(True)
+Gui.Form.GSGC_RM.Zorder(0)
+Gui.Form.GSGC_RM.Size(1013,611)
+Gui.Form.GSGC_RM.Position(2,1)
+Gui.Form.GSGC_RM.Parent("tab1",1)
+Gui.Form.GSGC_RM.Event(RowCellClick,GSGC_RM_RowCellClick)
+Gui.Form.GSGC_RM.Anchor(15)
+Gui.Form.GSGC_FG.Create(GsGridControl)
+Gui.Form.GSGC_FG.Enabled(True)
+Gui.Form.GSGC_FG.Visible(True)
+Gui.Form.GSGC_FG.Zorder(0)
+Gui.Form.GSGC_FG.Size(1011,610)
+Gui.Form.GSGC_FG.Position(1,1)
+Gui.Form.GSGC_FG.Parent("tab1",0)
+Gui.Form.GSGC_FG.Event(RowCellClick,GSGC_FG_RowCellClick)
+Gui.Form.GSGC_FG.Anchor(15)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+v.Global.dFrom.Declare
+v.Global.dTo.Declare
+v.Global.bAuth.Declare
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+
+'Customer: RABLE MACHINE INC.
+'Call ref.: RAB010-52720210743-0
+'Bryan Pham - 12/06/2021
+'Price variance dashboard
+
+F.Intrinsic.Control.Try
+V.Local.sError.Declare	
+
+f.ODBC.Connection!con.OpenCompanyConnection
+GUI.Form.tab1.SetTab(0)
+F.Intrinsic.Control.CallSub(SetContextMenus)
+
+Function.Global.Security.CheckUserAccessIPM(312,0,v.Global.bAuth)
+
+gui.Form..Show
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.cmdRefresh_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Global.dFrom.Set(v.Screen.Form!dtpFrom.Value)
+v.Global.dTo.Set(v.Screen.Form!dtpTo.Value)
+
+f.Intrinsic.UI.InvokeWaitDialog("Loading data...")
+F.Intrinsic.Control.BlockEVents
+f.Intrinsic.Control.CallSub(loadDT_FG)
+F.Intrinsic.Control.CallSub(loadGV_FG)
+f.Intrinsic.Control.CallSub(loadDT_RM)
+F.Intrinsic.Control.CallSub(loadGV_RM)
+F.Intrinsic.Control.UnBlockEVents
+f.Intrinsic.UI.CloseWaitDialog
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdRefresh_Click.End
+
+Program.Sub.Form_UnLoad.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+gui.Form..Visible(False)
+f.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.Form_UnLoad.End
+
+Program.Sub.GSGC_FG_RowCellClick.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+V.Local.sTemp.Declare
+v.Local.sLoc.Declare
+v.Local.sPart.Declare
+'open Inv Master
+f.Intrinsic.Control.If(v.Global.bAuth.Not)
+	f.Intrinsic.UI.Msgbox("User does not have permission to Inventory > View > Inventory Parts.","Attention")
+	f.Intrinsic.Control.ExitSub
+f.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.BlockEvents
+Gui.Form.GSGC_FG.GetCellValueByColumnName("gvInvHist_FG","PART_COLUMN",V.Args.RowIndex,V.Local.sPart)
+Gui.Form.GSGC_FG.GetCellValueByColumnName("gvInvHist_FG","LOCATION",V.Args.RowIndex,V.Local.sLoc)
+
+F.Intrinsic.Control.If(Variable.Args.Column, =, "DESCRIPTION")	
+	F.Intrinsic.String.Build("{0}!*!O!*!*!*ZDR*!*!*!*!*ZDR*!*!*!{1}!*!{2}", V.Caller.CompanyCode,v.Local.sPart, V.Local.sLoc, V.Local.sTemp)
+	Function.Global.General.CallWrapperSync("3500", V.Local.sTemp)
+f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.UnBlockEvents
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.GSGC_FG_RowCellClick.End
+
+Program.Sub.GSGC_RM_RowCellClick.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+V.Local.sTemp.Declare
+v.Local.sLoc.Declare
+v.Local.sPart.Declare
+'open Inv Master
+f.Intrinsic.Control.If(v.Global.bAuth.Not)
+	f.Intrinsic.UI.Msgbox("User does not have permission to Inventory > View > Inventory Parts.","Attention")
+	f.Intrinsic.Control.ExitSub
+f.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.BlockEvents
+Gui.Form.GSGC_RM.GetCellValueByColumnName("gvInvHist_RM","PART_COLUMN",V.Args.RowIndex,V.Local.sPart)
+Gui.Form.GSGC_RM.GetCellValueByColumnName("gvInvHist_RM","LOCATION",V.Args.RowIndex,V.Local.sLoc)
+
+F.Intrinsic.Control.If(Variable.Args.Column, =, "DESCRIPTION")	
+	F.Intrinsic.String.Build("{0}!*!O!*!*!*ZDR*!*!*!*!*ZDR*!*!*!{1}!*!{2}", V.Caller.CompanyCode,v.Local.sPart, V.Local.sLoc, V.Local.sTemp)
+	Function.Global.General.CallWrapperSync("3500", V.Local.sTemp)
+f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.UnBlockEvents
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.GSGC_RM_RowCellClick.End
+
+Program.Sub.loadDT_FG.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSQL.Declare
+v.Local.sFilter.Declare
+
+
+f.Intrinsic.Control.If(v.DataTable.dtInvHist_FG.Exists,=,true)
+	f.Data.Datatable.Close("dtInvHist_FG")
+f.Intrinsic.Control.EndIf
+
+v.Local.sSQL.Set("Select distinct RTRIM(A.PART) as PART_COLUMN,A.LOCATION, RTRIM(A.DESCRIPTION) as DESCRIPTION,A.QTY_RECEIVED, A.DATE_RECEIVED ,A.COST as NEW_INV_COST, A.PURCHASE_ORDER, RTRIM(B.NAME_VENDOR) as NAME_VENDOR,A.BUYER as BUYER_CODE from V_PO_HISTORY A left join V_VENDOR_MASTER B on A.VENDOR = B.VENDOR where A.PRODUCT_LINE in ('AA','AX','BA','BX','CA','CX') order by A.PART,A.DATE_RECEIVED")
+
+f.Data.Datatable.CreateFromSQL("dtInvHist_FG","con",v.Local.sSQL,true)
+f.Data.Datatable.AddColumn("dtInvHist_FG","Temp_Old_Cost","Float",0)
+
+'populate old cost, if there is no old cost, use the new cost as old cost 
+F.Data.DataTable.SetValueOnNextLine("dtInvHist_FG", "NEW_INV_COST", "Temp_Old_Cost", "PART_COLUMN")
+F.Data.DataTable.AddExpressionColumn("dtInvHist_FG", "OLD_INV_COST", "Float", "IIF(Temp_Old_Cost = 0, NEW_INV_COST, Temp_Old_Cost)")
+F.Data.DataTable.AddExpressionColumn("dtInvHist_FG", "Variance", "Float", "[NEW_INV_COST] - [OLD_INV_COST]")
+'calculate variance and variance %
+f.Data.Datatable.AddExpressionColumn("dtInvHist_FG","Var_Percent","Float","[Variance]/[OLD_INV_COST]")
+
+'filter record between the date range
+f.Intrinsic.String.Build("DATE_RECEIVED >= '{0}' and DATE_RECEIVED <= '{1}'",v.Global.dFrom,v.Global.dTo,v.Local.sFilter)
+f.Data.DataView.Create("dtInvHist_FG","dvInvHist_FG",22,v.Local.sFilter,"PART_COLUMN,DATE_RECEIVED")
+
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.loadDT_FG.End
+
+Program.Sub.loadDT_RM.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSQL.Declare
+v.Local.sFilter.Declare
+f.Intrinsic.Control.If(v.DataTable.dtInvHist_RM.Exists,=,true)
+	f.Data.Datatable.Close("dtInvHist_RM")
+f.Intrinsic.Control.EndIf
+
+
+v.Local.sSQL.Set("Select distinct RTRIM(A.PART) as PART_COLUMN,A.LOCATION, RTRIM(A.DESCRIPTION) as DESCRIPTION,A.QTY_RECEIVED, A.DATE_RECEIVED ,A.COST as NEW_INV_COST, A.PURCHASE_ORDER, RTRIM(B.NAME_VENDOR) as NAME_VENDOR,A.BUYER as BUYER_CODE from V_PO_HISTORY A left join V_VENDOR_MASTER B on A.VENDOR = B.VENDOR where A.PRODUCT_LINE = '01' order by A.PART,A.DATE_RECEIVED")
+
+f.Data.Datatable.CreateFromSQL("dtInvHist_RM","con",v.Local.sSQL,true)
+f.Data.Datatable.AddColumn("dtInvHist_RM","Temp_Old_Cost","Float",0)
+
+'populate old cost, if there is no old cost, use the new cost as old cost 
+F.Data.DataTable.SetValueOnNextLine("dtInvHist_RM", "NEW_INV_COST", "Temp_Old_Cost", "PART_COLUMN")
+F.Data.DataTable.AddExpressionColumn("dtInvHist_RM", "OLD_INV_COST", "Float", "IIF(Temp_Old_Cost = 0, NEW_INV_COST, Temp_Old_Cost)")
+F.Data.DataTable.AddExpressionColumn("dtInvHist_RM", "Variance", "Float", "[NEW_INV_COST] - [OLD_INV_COST]")
+'calculate variance and variance %
+f.Data.Datatable.AddExpressionColumn("dtInvHist_RM","Var_Percent","Float","[Variance]/[OLD_INV_COST]")
+
+'filter record between the date range
+f.Intrinsic.String.Build("DATE_RECEIVED >= '{0}' and DATE_RECEIVED <='{1}'",v.Global.dFrom,v.Global.dTo,v.Local.sFilter)
+f.Data.DataView.Create("dtInvHist_RM","dvInvHist_RM",22,v.Local.sFilter,"PART_COLUMN,DATE_RECEIVED")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.loadDT_RM.End
+
+Program.Sub.loadGV_FG.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+gui.Form.GSGC_FG.AddGridviewFromDataview("gvInvHist_FG","dtInvHist_FG","dvInvHist_FG")
+Gui.Form.GSGC_FG.SuspendLayout()
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","LOCATION","Visible","False")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Temp_Old_Cost","Visible","False")
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PART_COLUMN","VisibleIndex","0")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DESCRIPTION","VisibleIndex","1")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","QTY_RECEIVED","VisibleIndex","2")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DATE_RECEIVED","VisibleIndex","3")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","OLD_INV_COST","VisibleIndex","4")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NEW_INV_COST","VisibleIndex","5")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Variance","VisibleIndex","6")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Var_Percent","VisibleIndex","7")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","BUYER_CODE","VisibleIndex","8")
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PART_COLUMN","Caption","Part")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PART_COLUMN","AllowEdit",False)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PART_COLUMN","MinWidth","100")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PART_COLUMN","HeaderFontBold",True)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PART_COLUMN","HeaderHAlignment","Center")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PART_COLUMN","CellHAlignment","Center")
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DESCRIPTION","CellForeColor","Blue")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DESCRIPTION","Caption","Description")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DESCRIPTION","AllowEdit",False)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DESCRIPTION","MinWidth","140")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DESCRIPTION","HeaderFontBold",True)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DESCRIPTION","HeaderHAlignment","Center")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DESCRIPTION","CellHAlignment","Center")
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","QTY_RECEIVED","Caption","Quantity")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","QTY_RECEIVED","AllowEdit",False)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","QTY_RECEIVED","MinWidth","80")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","QTY_RECEIVED","HeaderFontBold",True)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","QTY_RECEIVED","HeaderHAlignment","Center")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","QTY_RECEIVED","CellHAlignment","Right")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","QTY_RECEIVED","DisplayCustomNumeric","#,###,##0.00")
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","OLD_INV_COST","Caption","Old Cost")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","OLD_INV_COST","AllowEdit",False)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","OLD_INV_COST","MinWidth","80")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","OLD_INV_COST","HeaderFontBold",True)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","OLD_INV_COST","HeaderHAlignment","Center")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","OLD_INV_COST","CellHAlignment","Right")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","OLD_INV_COST","DisplayCustomNumeric","#,###,##0.0000")
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NEW_INV_COST","Caption","New Cost")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NEW_INV_COST","AllowEdit",False)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NEW_INV_COST","MinWidth","80")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NEW_INV_COST","HeaderFontBold",True)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NEW_INV_COST","HeaderHAlignment","Center")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NEW_INV_COST","CellHAlignment","Right")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NEW_INV_COST","DisplayCustomNumeric","#,###,##0.0000")
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Variance","Caption","Variance")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Variance","AllowEdit",False)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Variance","MinWidth","80")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Variance","HeaderFontBold",True)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Variance","HeaderHAlignment","Center")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Variance","CellHAlignment","Right")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Variance","DisplayCustomNumeric","#,###,##0.0000")
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Var_Percent","Caption","Variance %")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Var_Percent","AllowEdit",False)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Var_Percent","MinWidth","80")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Var_Percent","HeaderFontBold",True)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Var_Percent","HeaderHAlignment","Center")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Var_Percent","CellHAlignment","Right")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","Var_Percent","DisplayCustomNumeric","#,###,##0.00%")
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","BUYER_CODE","Caption","Buyer Code")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","BUYER_CODE","AllowEdit",False)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","BUYER_CODE","MinWidth","80")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","BUYER_CODE","HeaderFontBold",True)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","BUYER_CODE","HeaderHAlignment","Center")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","BUYER_CODE","CellHAlignment","Center")
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DATE_RECEIVED","Caption","Rec. Date")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DATE_RECEIVED","AllowEdit",False)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DATE_RECEIVED","MinWidth","100")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DATE_RECEIVED","HeaderFontBold",True)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DATE_RECEIVED","HeaderHAlignment","Center")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DATE_RECEIVED","CellHAlignment","Center")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","DATE_RECEIVED","DisplayCustomDatetime","d")
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PURCHASE_ORDER","Caption","PO Number")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PURCHASE_ORDER","AllowEdit",False)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PURCHASE_ORDER","MinWidth","80")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PURCHASE_ORDER","HeaderFontBold",True)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PURCHASE_ORDER","HeaderHAlignment","Center")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","PURCHASE_ORDER","CellHAlignment","Center")
+
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NAME_VENDOR","Caption","Vendor Name")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NAME_VENDOR","AllowEdit",False)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NAME_VENDOR","MinWidth","150")
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NAME_VENDOR","HeaderFontBold",True)
+Gui.Form.GSGC_FG.SetColumnProperty("gvInvHist_FG","NAME_VENDOR","HeaderHAlignment","Center")
+
+Gui.Form.GSGC_FG.ResumeLayout()
+Gui.Form.GSGC_FG.MainView("gvInvHist_FG")
+
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.loadGV_FG.End
+
+Program.Sub.loadGV_RM.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+gui.Form.GSGC_RM.AddGridviewFromDataview("gvInvHist_RM","dtInvHist_RM","dvInvHist_RM")
+
+Gui.Form.GSGC_RM.SuspendLayout()
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","LOCATION","Visible","False")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Temp_Old_Cost","Visible","False")
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PART_COLUMN","VisibleIndex","0")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DESCRIPTION","VisibleIndex","1")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","QTY_RECEIVED","VisibleIndex","2")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DATE_RECEIVED","VisibleIndex","3")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","OLD_INV_COST","VisibleIndex","4")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NEW_INV_COST","VisibleIndex","5")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Variance","VisibleIndex","6")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Var_Percent","VisibleIndex","7")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","BUYER_CODE","VisibleIndex","8")
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PART_COLUMN","Caption","Part")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PART_COLUMN","AllowEdit",False)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PART_COLUMN","MinWidth","100")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PART_COLUMN","HeaderFontBold",True)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PART_COLUMN","HeaderHAlignment","Center")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PART_COLUMN","CellHAlignment","Center")
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DESCRIPTION","CellForeColor","Blue")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DESCRIPTION","Caption","Description")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DESCRIPTION","AllowEdit",False)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DESCRIPTION","MinWidth","140")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DESCRIPTION","HeaderFontBold",True)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DESCRIPTION","HeaderHAlignment","Center")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DESCRIPTION","CellHAlignment","Center")
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","QTY_RECEIVED","Caption","Quantity")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","QTY_RECEIVED","AllowEdit",False)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","QTY_RECEIVED","MinWidth","80")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","QTY_RECEIVED","HeaderFontBold",True)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","QTY_RECEIVED","HeaderHAlignment","Center")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","QTY_RECEIVED","CellHAlignment","Right")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","QTY_RECEIVED","DisplayCustomNumeric","#,###,##0.00")
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","OLD_INV_COST","Caption","Old Cost")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","OLD_INV_COST","AllowEdit",False)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","OLD_INV_COST","MinWidth","80")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","OLD_INV_COST","HeaderFontBold",True)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","OLD_INV_COST","HeaderHAlignment","Center")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","OLD_INV_COST","CellHAlignment","Right")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","OLD_INV_COST","DisplayCustomNumeric","#,###,##0.0000")
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NEW_INV_COST","Caption","New Cost")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NEW_INV_COST","AllowEdit",False)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NEW_INV_COST","MinWidth","80")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NEW_INV_COST","HeaderFontBold",True)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NEW_INV_COST","HeaderHAlignment","Center")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NEW_INV_COST","CellHAlignment","Right")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NEW_INV_COST","DisplayCustomNumeric","#,###,##0.0000")
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Variance","Caption","Variance")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Variance","AllowEdit",False)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Variance","MinWidth","80")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Variance","HeaderFontBold",True)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Variance","HeaderHAlignment","Center")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Variance","CellHAlignment","Right")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Variance","DisplayCustomNumeric","#,###,##0.0000")
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Var_Percent","Caption","Variance %")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Var_Percent","AllowEdit",False)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Var_Percent","MinWidth","80")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Var_Percent","HeaderFontBold",True)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Var_Percent","HeaderHAlignment","Center")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Var_Percent","CellHAlignment","Right")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","Var_Percent","DisplayCustomNumeric","#,###,##0.00%")
+
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","BUYER_CODE","Caption","Buyer Code")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","BUYER_CODE","AllowEdit",False)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","BUYER_CODE","MinWidth","80")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","BUYER_CODE","HeaderFontBold",True)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","BUYER_CODE","HeaderHAlignment","Center")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","BUYER_CODE","CellHAlignment","Center")
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DATE_RECEIVED","Caption","Rec. Date")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DATE_RECEIVED","AllowEdit",False)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DATE_RECEIVED","MinWidth","100")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DATE_RECEIVED","HeaderFontBold",True)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DATE_RECEIVED","HeaderHAlignment","Center")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DATE_RECEIVED","CellHAlignment","Center")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","DATE_RECEIVED","DisplayCustomDatetime","d")
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PURCHASE_ORDER","Caption","PO Number")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PURCHASE_ORDER","AllowEdit",False)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PURCHASE_ORDER","MinWidth","80")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PURCHASE_ORDER","HeaderFontBold",True)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PURCHASE_ORDER","HeaderHAlignment","Center")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","PURCHASE_ORDER","CellHAlignment","Center")
+
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NAME_VENDOR","Caption","Vendor Name")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NAME_VENDOR","AllowEdit",False)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NAME_VENDOR","MinWidth","150")
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NAME_VENDOR","HeaderFontBold",True)
+Gui.Form.GSGC_RM.SetColumnProperty("gvInvHist_RM","NAME_VENDOR","HeaderHAlignment","Center")
+
+Gui.Form.GSGC_RM.ResumeLayout()
+Gui.Form.GSGC_RM.MainView("gvInvHist_RM")
+
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.loadGV_RM.End
+
+Program.Sub.Unload.Start
+f.Intrinsic.Control.Try
+	v.Local.sError.Declare
+
+	F.Intrinsic.Control.If(V.ODBC.con.State,=,1)
+		F.ODBC.Connection!con.close
+	F.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Subroutine called from:{6}{1}Error Occurred: {3}{1}Description: {4}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,v.Ambient.SubroutineCalledFrom,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End	
+F.Intrinsic.Control.EndTry
+Program.Sub.Unload.End
+
+Program.Sub.SetContextMenus.Start
+f.Intrinsic.Control.Try
+v.Local.sError.Declare
+v.Local.bRet.Declare
+
+Gui.Form..ContextMenuCreate("ctxInvHist_FG")
+Gui.Form.GSGC_FG.ContextMenuAttach("ctxInvHist_FG")
+Gui.Form..ContextMenuAddItem("ctxInvHist_FG","Refresh",0,"Refresh")
+Gui.Form..ContextMenuAddItem("ctxInvHist_FG","Export",0,"Export")	
+
+Gui.Form..ContextMenuSetItemEventHandler("ctxInvHist_FG","Refresh","cmdRefresh_Click")
+Gui.Form..ContextMenuSetItemEventHandler("ctxInvHist_FG","Export","MenuClickExport")	
+
+
+Gui.Form..ContextMenuCreate("ctxInvHist_RM")
+Gui.Form.GSGC_RM.ContextMenuAttach("ctxInvHist_RM")
+Gui.Form..ContextMenuAddItem("ctxInvHist_RM","Refresh",0,"Refresh")
+Gui.Form..ContextMenuAddItem("ctxInvHist_RM","Export",0,"Export")	
+
+Gui.Form..ContextMenuSetItemEventHandler("ctxInvHist_RM","Refresh","cmdRefresh_Click")
+Gui.Form..ContextMenuSetItemEventHandler("ctxInvHist_RM","Export","MenuClickExport")	
+
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Subroutine called from:{6}{1}Error Occurred: {3}{1}Description: {4}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,v.Ambient.SubroutineCalledFrom,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End	
+F.Intrinsic.Control.EndTry
+Program.Sub.SetContextMenus.End
+
+Program.Sub.MenuClickExport.Start
+f.Intrinsic.Control.Try
+v.Local.sError.Declare
+V.Local.sFileExport.Declare
+V.Local.bExcel.Declare
+V.Local.bFileLocked.Declare
+V.Local.sMsg.Declare
+V.Local.sForm.Declare
+V.Local.sControl.Declare
+V.Local.bChart.Declare
+
+F.Automation.MSExcel.CheckPresence(V.Local.bExcel)
+F.Intrinsic.Control.SelectCase(V.Args.MenuName.UCase)
+	F.Intrinsic.Control.Case("CTXINVHIST_FG")
+		V.Local.sForm.Set("Form")
+		V.Local.sControl.Set("GSGC_FG")
+		F.Intrinsic.Control.If(V.Local.bExcel.Not)
+			F.Intrinsic.String.Build("{0}Inv_Hist_{1}_Export.xlsx",V.Caller.LocalGssTempDir,"GSGC_FG",V.Local.sFileExport)
+			F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+			F.Intrinsic.Control.If(V.Local.bFileLocked)
+				F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+				F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+			F.Intrinsic.Control.Else
+				Gui.Form.GSGC_FG.ExportDetails("xlsx", V.Local.sFileExport, 1)
+				F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Else
+			F.Intrinsic.String.Build("{0}Inv_Hist_{1}_Export.csv",V.Caller.LocalGssTempDir,"GSGC_FG",V.Local.sFileExport)
+			F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+			F.Intrinsic.Control.If(V.Local.bFileLocked)
+				F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+				F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+			F.Intrinsic.Control.Else
+				Gui.Form.GSGC_FG.ExportDetails("csv", V.Local.sFileExport, 1)
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+		F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.Case("CTXINVHIST_RM")
+		V.Local.sForm.Set("Form")
+		V.Local.sControl.Set("GSGC_RM")
+		F.Intrinsic.Control.If(V.Local.bExcel.Not)
+			F.Intrinsic.String.Build("{0}Inv_Hist_{1}_Export.xlsx",V.Caller.LocalGssTempDir,"GSGC_RM",V.Local.sFileExport)
+			F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+			F.Intrinsic.Control.If(V.Local.bFileLocked)
+				F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+				F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+			F.Intrinsic.Control.Else
+				Gui.Form.GSGC_RM.ExportDetails("xlsx", V.Local.sFileExport, 1)
+				F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Else
+			F.Intrinsic.String.Build("{0}Inv_Hist_{1}_Export.csv",V.Caller.LocalGssTempDir,"GSGC_RM",V.Local.sFileExport)
+			F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+			F.Intrinsic.Control.If(V.Local.bFileLocked)
+				F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+				F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+			F.Intrinsic.Control.Else
+				Gui.Form.GSGC_RM.ExportDetails("csv", V.Local.sFileExport, 1)
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+		F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Subroutine called from:{6}{1}Error Occurred: {3}{1}Description: {4}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,v.Ambient.SubroutineCalledFrom,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End	
+F.Intrinsic.Control.EndTry
+Program.Sub.MenuClickExport.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$bpham$}$20220427104016757$}$Di0riF4Q5RIv6jxva5zSWBaTvp+T0Dt6ymME02wlV2yKFC4/WGcN7aYmsWAN/Ab0M12jyHmCO08=
+Program.Sub.Comments.End
